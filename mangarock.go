@@ -11,8 +11,8 @@ import (
 )
 
 type Client struct {
-	name, base string
-	client     *http.Client
+	base   string
+	client *http.Client
 }
 
 func Base(base string) func(*Client) {
@@ -29,7 +29,6 @@ func HttpClient(c *http.Client) func(*Client) {
 
 func New(options ...func(*Client)) *Client {
 	mr := &Client{
-		name:   "mangarock",
 		base:   "https://api.mangarockhd.com/query/web400",
 		client: &http.Client{},
 	}
@@ -109,15 +108,12 @@ type Manga struct {
 
 type MangaSingle struct {
 	Manga
-	Description string    `json:"description"`
-	Chapters    []Chapter `json:"chapters"`
-	Categories  []struct {
-		ID   string `json:"oid"`
-		Name string `json:"name"`
-	} `json:"rich_categories"`
-	Cover    string   `json:"cover"`
-	Artworks []string `json:"artworks"`
-	Aliases  []string `json:"alias"`
+	Description string     `json:"description"`
+	Chapters    []Chapter  `json:"chapters"`
+	Categories  []Category `json:"rich_categories"`
+	Cover       string     `json:"cover"`
+	Artworks    []string   `json:"artworks"`
+	Aliases     []string   `json:"alias"`
 }
 
 type Chapter struct {
@@ -130,6 +126,11 @@ type Chapter struct {
 
 	// Fields available if requested as chapter
 	Pages []string `json:"pages"`
+}
+
+type Category struct {
+	ID   string `json:"oid"`
+	Name string `json:"name"`
 }
 
 type Author struct {
@@ -289,6 +290,9 @@ func (c *Client) Author(id string) (Author, []Manga, error) {
 	mangas, err := c.mangasByIDs(mangaIDs)
 	if err != nil {
 		return Author{}, nil, errors.Wrap(err, "could not get authors mangas")
+	}
+	for i := range mangas {
+		mangas[i].Author = authors[0]
 	}
 	return authors[0], mangas, nil
 }
