@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"sort"
 	"time"
 
 	"github.com/pkg/errors"
@@ -111,12 +110,6 @@ type Manga struct {
 	Thumbnail       string    `json:"thumbnail"`
 	Updated         time.Time `json:"updated_at"`
 }
-
-type Mangas []Manga
-
-func (ms Mangas) Len() int           { return len(ms) }
-func (ms Mangas) Less(i, j int) bool { return ms[i].Name < ms[j].Name }
-func (ms Mangas) Swap(i, j int)      { ms[i], ms[j] = ms[j], ms[i] }
 
 type MangaSingle struct {
 	Manga
@@ -236,11 +229,12 @@ func (c *Client) mangasByIDs(ids []string) ([]Manga, error) {
 	if err := json.Unmarshal(res, &mangaMap); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal mangas by ids")
 	}
-	var mangas Mangas
-	for _, manga := range mangaMap {
-		mangas = append(mangas, manga)
+	var mangas []Manga
+	for _, id := range ids {
+		if manga, ok := mangaMap[id]; ok {
+			mangas = append(mangas, manga)
+		}
 	}
-	sort.Sort(mangas)
 	return mangas, nil
 }
 

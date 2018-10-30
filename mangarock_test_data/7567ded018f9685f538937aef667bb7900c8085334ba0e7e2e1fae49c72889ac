@@ -1,11 +1,11 @@
 HTTP/2.0 200 OK
 Content-Length: 41
-Cf-Ray: 471e0177ce8940dc-HAM
+Cf-Ray: 471e1455ff264100-HAM
 Content-Type: application/json; charset=utf-8
-Date: Tue, 30 Oct 2018 12:50:06 GMT
+Date: Tue, 30 Oct 2018 13:02:59 GMT
 Expect-Ct: max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
 Expected-Size: 41
 Server: cloudflare
-Set-Cookie: __cfduid=dcbe5c00f0c22fcc4a5e92bee8fb3807c1540903806; expires=Wed, 30-Oct-19 12:50:06 GMT; path=/; domain=.mangarockhd.com; HttpOnly
+Set-Cookie: __cfduid=d519c011cb931fcfedf9959a15de539e71540904579; expires=Wed, 30-Oct-19 13:02:59 GMT; path=/; domain=.mangarockhd.com; HttpOnly
 
 {"code":0,"data":["mrs-serie-100177863"]}
