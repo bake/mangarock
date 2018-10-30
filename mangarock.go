@@ -10,23 +10,28 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Client is a MangaRock Client.
 type Client struct {
 	base   string
 	client *http.Client
 }
 
-func Base(base string) func(*Client) {
+// WithBase sets the API base.
+func WithBase(base string) func(*Client) {
 	return func(mr *Client) {
 		mr.base = base
 	}
 }
 
-func HttpClient(c *http.Client) func(*Client) {
+// WithHTTPClient makes the manga client use a given http.Client to make
+// requests.
+func WithHTTPClient(c *http.Client) func(*Client) {
 	return func(mr *Client) {
 		mr.client = c
 	}
 }
 
+// New returns a new MangaRock Client.
 func New(options ...func(*Client)) *Client {
 	mr := &Client{
 		base:   "https://api.mangarockhd.com/query/web400",
@@ -38,6 +43,7 @@ func New(options ...func(*Client)) *Client {
 	return mr
 }
 
+// get sends a HTTP GET request.
 func (c *Client) get(url string, query url.Values) (json.RawMessage, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -59,6 +65,7 @@ func (c *Client) get(url string, query url.Values) (json.RawMessage, error) {
 	return resp.Data, nil
 }
 
+// post sends a HTTP POST request.
 func (c *Client) post(url string, body interface{}) (json.RawMessage, error) {
 	pr, pw := io.Pipe()
 	go func() {
@@ -92,8 +99,8 @@ type response struct {
 type Manga struct {
 	ID              string    `json:"oid"`
 	Name            string    `json:"name"`
-	AuthorName      string    `json:"author"`
-	Author          Author    `json:"author"`
+	Author          Author    `json:"-"`
+	Authors         []Author  `json:"authors"`
 	AuthorIDs       []string  `json:"author_ids"`
 	Genres          []string  `json:"genres"`
 	Rank            int       `json:"rank"`
@@ -102,8 +109,6 @@ type Manga struct {
 	Completed       bool      `json:"cmpleted"`
 	Thumbnail       string    `json:"thumbnail"`
 	Updated         time.Time `json:"updated_at"`
-
-	Authors []Author `json:"authors"`
 }
 
 type MangaSingle struct {
@@ -142,15 +147,30 @@ type Author struct {
 	Role string `json:"role"`
 }
 
+// Latest returns the latest mangas. It only uses the manga IDs and requests a
+// list like the one that would be returnd by a search. Fields like recently
+// added chapters are missing, but authors are added.
 func (c *Client) Latest(page int) ([]Manga, error) {
 	res, err := c.post(c.base+"/mrs_latest", nil)
 	if err != nil {
 		return nil, err
 	}
 	var mangas []Manga
-	return mangas, json.Unmarshal(res, &mangas)
+	if err := json.Unmarshal(res, &mangas); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal latest mangas")
+	}
+	ids := make([]string, len(mangas))
+	for i, manga := range mangas {
+		ids[i] = manga.ID
+	}
+	mangas, err = c.mangasByIDs(ids)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get latest mangas by ids")
+	}
+	return c.addAuthors(mangas)
 }
 
+// Search for mangas.
 func (c *Client) Search(query string) ([]Manga, error) {
 	body := struct {
 		Type     string `json:"type"`
@@ -169,7 +189,11 @@ func (c *Client) Search(query string) ([]Manga, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get mangas by ids")
 	}
+	return c.addAuthors(mangas)
+}
 
+// addAuthors adds authors to mangas based on their IDs.
+func (c *Client) addAuthors(mangas []Manga) ([]Manga, error) {
 	var authorIDs []string
 	for _, manga := range mangas {
 		authorIDs = append(authorIDs, manga.AuthorIDs...)
@@ -187,13 +211,15 @@ func (c *Client) Search(query string) ([]Manga, error) {
 		for _, id := range manga.AuthorIDs {
 			mangas[i].Authors = append(mangas[i].Authors, authorMap[id])
 		}
-		mangas[i].AuthorName = mangas[i].Authors[0].Name
+		// mangas[i].AuthorName = mangas[i].Authors[0].Name
 		mangas[i].Author = mangas[i].Authors[0]
 	}
 
 	return mangas, nil
 }
 
+// mangasByIDs returns a list of mangas based on IDs. Can be used to unify
+// manga results that are slightly different.
 func (c *Client) mangasByIDs(ids []string) ([]Manga, error) {
 	res, err := c.post("https://api.mangarockhd.com/meta", ids)
 	if err != nil {
@@ -210,6 +236,7 @@ func (c *Client) mangasByIDs(ids []string) ([]Manga, error) {
 	return mangas, nil
 }
 
+// authorsByIDs returns a slice of authors by their IDs.
 func (c *Client) authorsByIDs(ids []string) ([]Author, error) {
 	res, err := c.post("https://api.mangarockhd.com/meta", ids)
 	if err != nil {
@@ -226,6 +253,7 @@ func (c *Client) authorsByIDs(ids []string) ([]Author, error) {
 	return authors, nil
 }
 
+// Manga returns a single manga. It may contain more fields than a regular one.
 func (c *Client) Manga(id string) (MangaSingle, error) {
 	res, err := c.post(c.base+"/info?oid="+id, nil)
 	if err != nil {
@@ -239,6 +267,7 @@ func (c *Client) Manga(id string) (MangaSingle, error) {
 	return manga, nil
 }
 
+// Chapter returns a chapter containing its images.
 func (c *Client) Chapter(id, cid string) (Chapter, error) {
 	manga, err := c.Manga(id)
 	if err != nil {
@@ -264,6 +293,7 @@ func (c *Client) Chapter(id, cid string) (Chapter, error) {
 	return Chapter{}, errors.New("chapter not found")
 }
 
+// Author returns an author and their mangas.
 func (c *Client) Author(id string) (Author, []Manga, error) {
 	authors, err := c.authorsByIDs([]string{id})
 	if err != nil {
