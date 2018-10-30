@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"time"
 
 	"github.com/pkg/errors"
@@ -111,6 +112,12 @@ type Manga struct {
 	Updated         time.Time `json:"updated_at"`
 }
 
+type Mangas []Manga
+
+func (ms Mangas) Len() int           { return len(ms) }
+func (ms Mangas) Less(i, j int) bool { return ms[i].Name < ms[j].Name }
+func (ms Mangas) Swap(i, j int)      { ms[i], ms[j] = ms[j], ms[i] }
+
 type MangaSingle struct {
 	Manga
 	Description string     `json:"description"`
@@ -181,11 +188,11 @@ func (c *Client) Search(query string) ([]Manga, error) {
 		return nil, errors.Wrap(err, "could not execute search")
 	}
 
-	var mangaIDs []string
-	if err := json.Unmarshal(res, &mangaIDs); err != nil {
+	var ids []string
+	if err := json.Unmarshal(res, &ids); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal manga IDs")
 	}
-	mangas, err := c.mangasByIDs(mangaIDs)
+	mangas, err := c.mangasByIDs(ids)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get mangas by ids")
 	}
@@ -194,11 +201,11 @@ func (c *Client) Search(query string) ([]Manga, error) {
 
 // addAuthors adds authors to mangas based on their IDs.
 func (c *Client) addAuthors(mangas []Manga) ([]Manga, error) {
-	var authorIDs []string
+	var ids []string
 	for _, manga := range mangas {
-		authorIDs = append(authorIDs, manga.AuthorIDs...)
+		ids = append(ids, manga.AuthorIDs...)
 	}
-	authors, err := c.authorsByIDs(authorIDs)
+	authors, err := c.authorsByIDs(ids)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get authors by ids")
 	}
@@ -229,10 +236,11 @@ func (c *Client) mangasByIDs(ids []string) ([]Manga, error) {
 	if err := json.Unmarshal(res, &mangaMap); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal mangas by ids")
 	}
-	var mangas []Manga
+	var mangas Mangas
 	for _, manga := range mangaMap {
 		mangas = append(mangas, manga)
 	}
+	sort.Sort(mangas)
 	return mangas, nil
 }
 
