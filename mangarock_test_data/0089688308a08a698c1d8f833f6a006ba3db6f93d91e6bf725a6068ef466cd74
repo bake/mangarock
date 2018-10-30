@@ -1,0 +1,10 @@
+HTTP/2.0 200 OK
+Cf-Ray: 471e017a081340dc-HAM
+Content-Type: application/json; charset=utf-8
+Date: Tue, 30 Oct 2018 12:50:07 GMT
+Expect-Ct: max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
+Expected-Size: 102
+Server: cloudflare
+Set-Cookie: __cfduid=d458a80803f74195b62efcb6d3ebdca931540903807; expires=Wed, 30-Oct-19 12:50:07 GMT; path=/; domain=.mangarockhd.com; HttpOnly
+
+{"code":0,"data":["https://f01.mrcdn.info/file/mrfiles/i/2/1/7/o8.ekAc1jsh.mri"]}
