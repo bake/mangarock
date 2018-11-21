@@ -34,7 +34,7 @@ func WithHTTPClient(c *http.Client) func(*Client) {
 // New returns a new MangaRock Client.
 func New(options ...func(*Client)) *Client {
 	mr := &Client{
-		base:   "https://api.mangarockhd.com/query/web400",
+		base:   "https://api.mangarockhd.com/query/web401",
 		client: &http.Client{},
 	}
 	for _, option := range options {
@@ -151,7 +151,7 @@ type Author struct {
 // list like the one that would be returnd by a search. Fields like recently
 // added chapters are missing, but authors are added.
 func (c *Client) Latest(page int) ([]Manga, error) {
-	res, err := c.post(c.base+"/mrs_latest", nil)
+	res, err := c.get(c.base+"/mrs_latest", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,9 @@ func (c *Client) addAuthors(mangas []Manga) ([]Manga, error) {
 		for _, id := range manga.AuthorIDs {
 			mangas[i].Authors = append(mangas[i].Authors, authorMap[id])
 		}
-		// mangas[i].AuthorName = mangas[i].Authors[0].Name
+		if len(mangas[i].Authors) == 0 {
+			continue
+		}
 		mangas[i].Author = mangas[i].Authors[0]
 	}
 
@@ -267,6 +269,15 @@ func (c *Client) Manga(id string) (MangaSingle, error) {
 	}
 	manga.Author = manga.Authors[0]
 	return manga, nil
+}
+
+// Mangas returns a slice of mangas.
+func (c *Client) Mangas(ids []string) ([]Manga, error) {
+	mangas, err := c.mangasByIDs(ids)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get authors mangas")
+	}
+	return mangas, nil
 }
 
 // Chapter returns a chapter containing its images.

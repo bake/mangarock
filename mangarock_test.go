@@ -11,7 +11,7 @@ import (
 var c *mangarock.Client
 
 func init() {
-	client := httpcache.New(diskcache.New("mangarock_test_data", 0)).Client()
+	client := httpcache.New(diskcache.New("testdeta", 0)).Client()
 	c = mangarock.New(mangarock.WithHTTPClient(client))
 }
 

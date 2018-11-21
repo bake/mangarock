@@ -1,0 +1,10 @@
+HTTP/2.0 200 OK
+Cf-Ray: 47d45850c809c4d3-DUS
+Content-Type: application/json; charset=utf-8
+Date: Wed, 21 Nov 2018 15:56:12 GMT
+Expect-Ct: max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
+Expected-Size: 258
+Server: cloudflare
+Set-Cookie: __cfduid=d05eccce754004d75f8275b530209fd2d1542815772; expires=Thu, 21-Nov-19 15:56:12 GMT; path=/; domain=.mangarockhd.com; HttpOnly
+
+{"code":0,"data":{"mrs-serie-100177863":{"author_ids":["mrs-author-100178040"],"completed":false,"name":"Fushigi Neko no Kyuu-chan","oid":"mrs-serie-100177863","thumbnail":"https://f01.mrcdn.info/file/mrportal/i/2/1/d/jm.2t5yizYv.jpg","total_chapters":214}}}
