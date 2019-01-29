@@ -3,15 +3,15 @@ package mangarock_test
 import (
 	"testing"
 
-	"git.192k.pw/bake/mangarock"
-	"github.com/BakeRolls/httpcache"
-	"github.com/BakeRolls/httpcache/diskcache"
+	"github.com/bakerolls/httpcache"
+	"github.com/bakerolls/httpcache/diskcache"
+	"github.com/bakerolls/mangarock"
 )
 
 var c *mangarock.Client
 
 func init() {
-	client := httpcache.New(diskcache.New("testdeta", 0)).Client()
+	client := httpcache.New(diskcache.New("testdeta", diskcache.NoExpiration)).Client()
 	c = mangarock.New(mangarock.WithHTTPClient(client))
 }
 

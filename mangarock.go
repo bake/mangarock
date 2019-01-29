@@ -96,6 +96,7 @@ type response struct {
 	Data json.RawMessage `json:"data"`
 }
 
+// Manga contains a manga. This struct is returned by endpoints listing mangas.
 type Manga struct {
 	ID              string    `json:"oid"`
 	Name            string    `json:"name"`
@@ -111,6 +112,8 @@ type Manga struct {
 	Updated         time.Time `json:"updated_at"`
 }
 
+// MangaSingle contains a manga with additional fields. This struct is
+// returned by requests for a single manga.
 type MangaSingle struct {
 	Manga
 	Description string     `json:"description"`
@@ -121,6 +124,7 @@ type MangaSingle struct {
 	Aliases     []string   `json:"alias"`
 }
 
+// Chapter of a manga.
 type Chapter struct {
 	ID   string `json:"oid"`
 	Name string `json:"name"`
@@ -133,11 +137,13 @@ type Chapter struct {
 	Pages []string `json:"pages"`
 }
 
+// Category of a manga.
 type Category struct {
 	ID   string `json:"oid"`
 	Name string `json:"name"`
 }
 
+// Author of a manga.
 type Author struct {
 	ID        string `json:"oid"`
 	Name      string `json:"name"`
@@ -148,7 +154,7 @@ type Author struct {
 }
 
 // Latest returns the latest mangas. It only uses the manga IDs and requests a
-// list like the one that would be returnd by a search. Fields like recently
+// list like the one that would be returned by a search. Fields like recently
 // added chapters are missing, but authors are added.
 func (c *Client) Latest(page int) ([]Manga, error) {
 	res, err := c.get(c.base+"/mrs_latest", nil)
