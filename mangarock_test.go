@@ -3,9 +3,9 @@ package mangarock_test
 import (
 	"testing"
 
-	"github.com/bakerolls/httpcache"
-	"github.com/bakerolls/httpcache/diskcache"
-	"github.com/bakerolls/mangarock"
+	"github.com/bake/httpcache"
+	"github.com/bake/httpcache/diskcache"
+	"github.com/bake/mangarock"
 )
 
 var c *mangarock.Client
